@@ -21,6 +21,7 @@ coverage reports:
 
 Fault localization
 ------------------
-The top-level program directory of each buggy program version provides a
-suspiciousness ranking (`tarantula.susp`) for each statement in each bug-related
-class. A class is related to the bug if it is touched by the triggering test.
+The top-level program directory of each buggy program version (i.e., bug1, bug2,
+or bug3) provides a suspiciousness ranking (*tarantula.susp*) for each statement
+in each bug-related class. A class is related to the bug if it is touched by the
+triggering test.
