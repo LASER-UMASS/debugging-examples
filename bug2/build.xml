@@ -1,0 +1,129 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!-- ====================================================================== -->
+<!-- Ant build file (http://ant.apache.org/) for Ant 1.6.2 or above.        -->
+<!-- ====================================================================== -->
+
+<project name="bug2" default="package" basedir=".">
+
+  <path id="build.test.classpath">
+    <pathelement location="${easymock.jar}" />
+  </path>
+
+  <!-- ====================================================================== -->
+  <!-- Import maven-build.xml into the current project                        -->
+  <!-- ====================================================================== -->
+
+  <import file="maven-build.xml"/>
+
+  <target name="test" depends="test.pass,test.fail">
+  </target>
+  <!-- ====================================================================== -->
+  <!-- Help target                                                            -->
+  <!-- ====================================================================== -->
+    <property name="dir.cov.pass" value="coverage_results_pass"/>
+    <property name="dir.cov.fail" value="coverage_results_fail"/>
+
+<!-- Configuration for cobertura -->
+    <path id="cobertura.classpath">
+        <fileset dir="lib">
+            <include name="cobertura-2.0.3.jar" />
+            <include name="cobertura-lib/**/*.jar" />
+        </fileset>
+    </path>
+    <taskdef classpathref="cobertura.classpath" resource="tasks.properties" />
+
+<!-- Execute all passing tests -->
+    <target name="test.pass" 
+          depends="compile-tests"
+          description="Run the passing test cases">
+      <junit printSummary="yes" haltonerror="true"
+             haltonfailure="false" fork="true" dir=".">
+      <sysproperty key="basedir" value="."/>
+      <formatter type="brief" usefile="false"/>
+      <classpath>
+        <pathelement location=".instrumented"/>
+        <path refid="build.test.classpath"/>
+        <pathelement location="${maven.build.outputDir}"/>
+        <pathelement location="${maven.build.testOutputDir}"/>
+        <pathelement location="lib/cobertura-2.0.3.jar"/>
+      </classpath>
+      <batchtest todir="${maven.test.reports}" unless="test">
+        <fileset dir="${maven.build.testDir.0}">
+          <include name="**/*Test*.java"/>
+          <exclude name="**/SystemUtilsTest2.java"/>
+        </fileset>
+      </batchtest>
+    </junit>
+  </target>
+
+<!-- Execute all failing tests -->
+  <target name="test.fail" 
+          depends="compile-tests" 
+          description="Run the failing test cases">
+      <junit printSummary="yes" haltonerror="true"
+             haltonfailure="false" fork="true" dir=".">
+      <sysproperty key="basedir" value="."/>
+      <formatter type="brief" usefile="false"/>
+      <classpath>
+        <pathelement location=".instrumented"/>
+        <path refid="build.test.classpath"/>
+        <pathelement location="${maven.build.outputDir}"/>
+        <pathelement location="${maven.build.testOutputDir}"/>
+        <pathelement location="lib/cobertura-2.0.3.jar"/>
+      </classpath>
+      <batchtest todir="${maven.test.reports}" unless="test">
+        <fileset dir="${maven.build.testDir.0}">
+          <include name="**/SystemUtilsTest2.java"/>
+        </fileset>
+      </batchtest>
+    </junit>
+  </target>
+
+<!-- Coverage analyses -->
+    <target name="coverage" description="Run coverage analysis">
+        <antcall target="clean" />
+        <antcall target="compile" />
+        <delete file="cobertura.ser"/>
+        <cobertura-instrument failOnError="true" toDir=".instrumented">
+            <fileset dir="target/classes">
+                <include name="**/*.class"/>
+            </fileset>
+        </cobertura-instrument>
+        <copy file="cobertura.ser" tofile="cobertura.init"/>
+
+        <antcall target="test.pass" />
+        <delete dir="${dir.cov.pass}"/>
+        <mkdir dir="${dir.cov.pass}" />
+        <cobertura-report format="html"
+            destdir="${dir.cov.pass}" srcdir="src/main/java" />
+
+        <delete file="cobertura.ser"/>
+        <copy file="cobertura.init" tofile="cobertura.ser"/>
+        <antcall target="test.fail" />
+        <delete dir="${dir.cov.fail}"/>
+        <mkdir dir="${dir.cov.fail}" />
+        <cobertura-report format="html"
+            destdir="${dir.cov.fail}" srcdir="src/main/java" />
+    </target>
+    
+  <target name="help">
+    <echo message="Please run: $ant -projecthelp"/>
+  </target>
+
+  <path id="test.classpath">                                                                
+      <path refid="build.test.classpath"/>                                     
+      <pathelement location="${maven.build.outputDir}"/>
+      <pathelement location="${maven.build.testOutputDir}"/>                   
+  </path> 
+
+  <path id="compile.classpath">                                                                
+      <path refid="build.classpath"/>                                     
+  </path> 
+
+   <property name="test.home" value="${maven.build.testDir.0}"/>
+   <property name="source.home" value="${maven.build.srcDir.0}"/>
+   <property name="build.home" value="${maven.build.dir}"/>
+   <target name="compile.tests" depends="compile-tests"/>
+ 
+</project>
