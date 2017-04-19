@@ -1,6 +1,7 @@
-#Debugging examples
+# Debugging examples
 This repository contains three buggy program versions (bug1, bug2, bug3), taken
-from the Apache commons-lang project. Each buggy program version contains one
+from the [Defects4J](https://github.com/rjust/defects4j) data set. Each buggy
+program version originates from the Apache commons-lang project and contains one
 reproducible bug.
 
 Testing
